@@ -353,6 +353,10 @@ func cmdDownload(args []string) {
 	} else {
 		os.MkdirAll(outDir, os.ModePerm)
 	}
+	// 转换为绝对路径，避免传给 FFmpeg 时出现相对路径解析问题
+	if absDir, absErr := filepath.Abs(outDir); absErr == nil {
+		outDir = absDir
+	}
 
 	// Get audio URL
 	audioURL := task.GetAudioURL(playInfo.Dash)
@@ -460,11 +464,12 @@ func downloadVideoAudio(client *bilibili.BiliClient, videoURL, audioURL, outDir,
 		fmt.Print("  Merging audio and video...")
 	}
 	err = mergeMedia(tmpVideo, tmpAudio, outputPath, duration)
-	os.Remove(tmpVideo)
-	os.Remove(tmpAudio)
 	if err != nil {
+		// 合并失败时保留临时文件以便调试
 		exitError("Failed to merge: " + err.Error())
 	}
+	os.Remove(tmpVideo)
+	os.Remove(tmpAudio)
 	if !flagJSON {
 		fmt.Println(" done")
 	}
