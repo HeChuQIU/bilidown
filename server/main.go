@@ -155,35 +155,8 @@ func mustInitTables() {
 	db := util.MustGetDB()
 	defer db.Close()
 
-	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS "field" (
-		"name" TEXT PRIMARY KEY NOT NULL,
-		"value" TEXT
-	)`); err != nil {
-		log.Fatalln("create table field:", err)
-	}
-
-	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS "log" (
-		"id" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
-		"content" TEXT NOT NULL,
-		"create_at" text NOT NULL DEFAULT CURRENT_TIMESTAMP
-	)`); err != nil {
-		log.Fatalln("create table log:", err)
-	}
-
-	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS "task" (
-		"id" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
-		"bvid" text NOT NULL,
-		"cid" integer NOT NULL,
-		"format" integer NOT NULL,
-		"title" text NOT NULL,
-		"owner" text NOT NULL,
-		"cover" text NOT NULL,
-		"status" text NOT NULL,
-		"folder" text NOT NULL,
-		"duration" integer NOT NULL,
-		"create_at" text NOT NULL DEFAULT CURRENT_TIMESTAMP
-	)`); err != nil {
-		log.Fatalln("create table task:", err)
+	if err := util.InitTables(db); err != nil {
+		log.Fatalln("InitTables:", err)
 	}
 
 	if _, err := util.GetCurrentFolder(db); err != nil {
