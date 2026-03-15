@@ -4,15 +4,13 @@
 
 哔哩哔哩视频解析下载工具，支持 8K 视频、Hi-Res 音频、杜比视界下载、批量解析，可扫码登录，常驻托盘。
 
-> [!Note]
-> 正在筹备开发 `3.x` 版本，使用 Electron 跨平台开发，支持自定义编码类型、仅下载音频或视频、批量下载、自定义命名规则、杜比全景声以及更多优化功能，敬请期待。
-
 ## 支持解析的链接类型
 
 -   【单个视频】https://www.bilibili.com/video/BV1LLDCYJEU3/
 -   【番剧和影视剧】https://www.bilibili.com/bangumi/play/ss48831
 -   【视频合集】https://space.bilibili.com/282565107/channel/collectiondetail?sid=1427135
 -   【收藏夹】https://space.bilibili.com/1176277996/favlist?fid=1234122612
+-   【UP 主空间地址】等待 3.x 版本支持
 
 ## 使用说明
 
@@ -122,3 +120,8 @@ go build && ./bilidown
 ## 软件界面
 
 ![](./docs/2024-11-05_090604.png)
+
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=iuroc/bilidown&type=Date)](https://www.star-history.com/#iuroc/bilidown&Date)
