@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strconv"
+	"strings"
 
 	"bilidown/common"
 )
@@ -46,8 +47,15 @@ func IsValidFormatCode(format common.MediaFormat) bool {
 }
 
 // FilterFileName 过滤字符串中的特殊字符，使其允许作为文件名。
+// 处理 Windows 禁止的 ASCII 字符、全角特殊字符、控制字符，以及尾部点/空格。
 func FilterFileName(fileName string) string {
-	return regexp.MustCompile(`[\\/:*?"<>|\n]`).ReplaceAllString(fileName, "")
+	// 过滤 Windows 禁止的 ASCII 字符和控制字符
+	result := regexp.MustCompile(`[\\/:*?"<>|\x00-\x1f]`).ReplaceAllString(fileName, "")
+	// 过滤全角版本的禁止字符（中文输入法常见，如 ？：＊ 等）
+	result = regexp.MustCompile(`[＼／：＊？"＜＞｜]`).ReplaceAllString(result, "")
+	// Windows 文件名不能以点或空格结尾
+	result = strings.TrimRight(result, ". ")
+	return result
 }
 
 // GetFFmpegPath 获取可用的 FFmpeg 执行路径。
