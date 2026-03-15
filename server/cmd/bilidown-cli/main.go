@@ -371,10 +371,10 @@ func cmdDownload(args []string) {
 		exitError("No audio stream available")
 	}
 
-	// Build safe title
-	safeTitle := util.FilterFileName(videoInfo.Title)
+	// Default filename now uses BVID instead of video title.
+	safeTitle := util.FilterFileName(bvid)
 	if len(videoInfo.Pages) > 1 {
-		safeTitle = fmt.Sprintf("%s - P%d %s", safeTitle, *page, util.FilterFileName(selectedPage.Part))
+		safeTitle = fmt.Sprintf("%s-P%d", safeTitle, *page)
 	}
 
 	if !flagJSON {
