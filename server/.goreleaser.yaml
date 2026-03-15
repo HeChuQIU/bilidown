@@ -45,6 +45,31 @@ builds:
           - amd64
       ldflags:
           - -s -w
+    - id: bilidown-cli_windows
+      main: ./cmd/bilidown-cli
+      binary: bilidown-cli
+      env:
+          - CGO_ENABLED=1
+          - >-
+              {{- if eq .Arch "amd64" }}CC=x86_64-w64-mingw32-gcc{{ end }}
+              {{- if eq .Arch "386" }}CC=i686-w64-mingw32-gcc{{ end }}
+      goos:
+          - windows
+      ldflags:
+          - -s -w
+    - id: bilidown-cli_linux
+      main: ./cmd/bilidown-cli
+      binary: bilidown-cli
+      env:
+          - CGO_ENABLED=1
+          - >-
+              {{- if eq .Arch "arm64" }}CC=aarch64-linux-gnu-gcc{{ end }}
+      goos:
+          - linux
+      goarch:
+          - amd64
+      ldflags:
+          - -s -w
 archives:
     - format: tar.gz
       # this name template makes the OS and Arch compatible with the results of `uname`.

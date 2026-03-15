@@ -7,4 +7,5 @@ static/
 download/
 build/
 .VSCodeCounter/
+/server/bilidown-cli
 .vscode/tasks.json

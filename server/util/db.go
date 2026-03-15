@@ -6,9 +6,66 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
+	"runtime"
 	"strings"
 	"sync"
 )
+
+// InitTables creates all required database tables.
+func InitTables(db *sql.DB) error {
+	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS "field" (
+		"name" TEXT PRIMARY KEY NOT NULL,
+		"value" TEXT
+	)`); err != nil {
+		return fmt.Errorf("create table field: %w", err)
+	}
+
+	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS "log" (
+		"id" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+		"content" TEXT NOT NULL,
+		"create_at" text NOT NULL DEFAULT CURRENT_TIMESTAMP
+	)`); err != nil {
+		return fmt.Errorf("create table log: %w", err)
+	}
+
+	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS "task" (
+		"id" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+		"bvid" text NOT NULL,
+		"cid" integer NOT NULL,
+		"format" integer NOT NULL,
+		"title" text NOT NULL,
+		"owner" text NOT NULL,
+		"cover" text NOT NULL,
+		"status" text NOT NULL,
+		"folder" text NOT NULL,
+		"duration" integer NOT NULL,
+		"create_at" text NOT NULL DEFAULT CURRENT_TIMESTAMP
+	)`); err != nil {
+		return fmt.Errorf("create table task: %w", err)
+	}
+	return nil
+}
+
+// GetDataDir returns the platform-specific data directory for bilidown.
+func GetDataDir() (string, error) {
+	var dir string
+	switch runtime.GOOS {
+	case "windows":
+		appData := os.Getenv("APPDATA")
+		if appData == "" {
+			return "", fmt.Errorf("APPDATA environment variable not set")
+		}
+		dir = filepath.Join(appData, "bilidown")
+	default:
+		home, err := os.UserHomeDir()
+		if err != nil {
+			return "", err
+		}
+		dir = filepath.Join(home, ".config", "bilidown")
+	}
+	return dir, nil
+}
 
 func CreateLog(db *sql.DB, content string) error {
 	SqliteLock.Lock()
