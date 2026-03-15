@@ -342,8 +342,15 @@ func cmdDownload(args []string) {
 		exitError("No DASH stream available for this video")
 	}
 
-	// Determine output directory
+	// Determine output directory:
+	// 1. --output-dir flag
+	// 2. Second positional argument (e.g. bilidown-cli download <url> <dir>)
+	// 3. Configured default folder from DB
+	// 4. ./download
 	outDir := *outputDir
+	if outDir == "" && fs.NArg() >= 2 {
+		outDir = fs.Arg(1)
+	}
 	if outDir == "" {
 		outDir, err = util.GetCurrentFolder(db)
 		if err != nil {
@@ -774,6 +781,9 @@ func outputResult(data map[string]any) {
 		if msg, ok := data["message"]; ok {
 			fmt.Println(msg)
 		}
+		if path, ok := data["path"]; ok {
+			fmt.Printf("Saved to: %s\n", path)
+		}
 	}
 }
 
@@ -832,6 +842,7 @@ Examples:
   bilidown-cli download --audio-only BV1xx411c7mD
   bilidown-cli download --format 120 --page 2 BV1xx411c7mD
   bilidown-cli download --output-dir ./videos BV1xx411c7mD
+  bilidown-cli download BV1xx411c7mD ./videos
 
 Video Quality Codes:
   127  8K Ultra HD          126  Dolby Vision
