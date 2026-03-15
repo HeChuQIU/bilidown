@@ -478,23 +478,24 @@ func downloadVideoAudio(client *bilibili.BiliClient, videoURL, audioURL, outDir,
 }
 
 func downloadFile(client *bilibili.BiliClient, url, destPath, label string) error {
-	var resp *io.ReadCloser
+	var resp io.ReadCloser
 	var total int64
 	var err error
 
 	for i := 0; i < 5; i++ {
 		httpResp, httpErr := client.SimpleGET(url, nil)
 		if httpErr == nil {
-			resp = &httpResp.Body
+			resp = httpResp.Body
 			total = httpResp.ContentLength
 			break
 		}
 		err = httpErr
+		time.Sleep(time.Duration(i+1) * time.Second)
 	}
 	if err != nil {
 		return err
 	}
-	defer (*resp).Close()
+	defer resp.Close()
 
 	file, err := os.Create(destPath)
 	if err != nil {
@@ -507,7 +508,7 @@ func downloadFile(client *bilibili.BiliClient, url, destPath, label string) erro
 	lastPrint := time.Time{}
 
 	for {
-		n, readErr := (*resp).Read(buf)
+		n, readErr := resp.Read(buf)
 		if n > 0 {
 			_, writeErr := file.Write(buf[:n])
 			if writeErr != nil {
@@ -752,7 +753,11 @@ func roundFloat(val float64, precision int) float64 {
 // ==================== Output Helpers ====================
 
 func printJSON(data any) {
-	bs, _ := json.Marshal(data)
+	bs, err := json.Marshal(data)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "JSON marshal error: %v\n", err)
+		return
+	}
 	fmt.Println(string(bs))
 }
 
