@@ -11,6 +11,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"bilidown/common"
 )
@@ -89,6 +90,24 @@ func GetRedirectedLocation(url string) (string, error) {
 	} else {
 		return locationURL.String(), nil
 	}
+}
+
+var resolveHTTPClient = &http.Client{
+	Timeout: 10 * time.Second,
+}
+
+// ResolveURL follows all HTTP redirects and returns the final URL string.
+func ResolveURL(rawURL string) (string, error) {
+	req, err := http.NewRequest("HEAD", rawURL, nil)
+	if err != nil {
+		return "", err
+	}
+	resp, err := resolveHTTPClient.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+	return resp.Request.URL.String(), nil
 }
 
 func MD5Hash(str string) string {
