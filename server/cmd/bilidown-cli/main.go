@@ -261,9 +261,16 @@ func cmdInfo(args []string) {
 		os.Exit(1)
 	}
 
-	bvid := parseBVID(fs.Arg(0))
+	input := fs.Arg(0)
+	if parseBVID(input) == "" && isB23URL(input) && !flagJSON {
+		fmt.Println("Resolving short URL...")
+	}
+	bvid, resolveErr := resolveToBVID(input)
+	if resolveErr != nil {
+		exitError("Failed to resolve short URL: " + resolveErr.Error())
+	}
 	if bvid == "" {
-		exitError("Invalid video URL or BVID: " + fs.Arg(0))
+		exitError("Invalid video URL or BVID: " + input)
 	}
 
 	db := mustOpenDB()
@@ -302,9 +309,16 @@ func cmdDownload(args []string) {
 		os.Exit(1)
 	}
 
-	bvid := parseBVID(fs.Arg(0))
+	input := fs.Arg(0)
+	if parseBVID(input) == "" && isB23URL(input) && !flagJSON {
+		fmt.Println("Resolving short URL...")
+	}
+	bvid, resolveErr := resolveToBVID(input)
+	if resolveErr != nil {
+		exitError("Failed to resolve short URL: " + resolveErr.Error())
+	}
 	if bvid == "" {
-		exitError("Invalid video URL or BVID: " + fs.Arg(0))
+		exitError("Invalid video URL or BVID: " + input)
 	}
 
 	db := mustOpenDB()
@@ -680,6 +694,31 @@ func parseBVID(input string) string {
 	re := regexp.MustCompile(`BV1[a-zA-Z0-9]+`)
 	match := re.FindString(input)
 	return match
+}
+
+// isB23URL reports whether the input looks like a b23.tv short URL.
+var b23URLPattern = regexp.MustCompile(`^https?://b23\.tv/`)
+
+func isB23URL(input string) bool {
+	return b23URLPattern.MatchString(input)
+}
+
+// resolveToBVID extracts a BVID from input, resolving b23.tv short URLs via
+// HTTP redirect when the BVID is not directly present in the URL.
+// It returns the BVID or an empty string if it cannot be determined.
+func resolveToBVID(input string) (string, error) {
+	bvid := parseBVID(input)
+	if bvid != "" {
+		return bvid, nil
+	}
+	if !isB23URL(input) {
+		return "", nil
+	}
+	resolved, err := util.ResolveURL(input)
+	if err != nil {
+		return "", err
+	}
+	return parseBVID(resolved), nil
 }
 
 func selectBestFormat(playInfo *bilibili.PlayInfo) common.MediaFormat {
